@@ -1992,32 +1992,223 @@
 
   let currentMonthOffset = 0; // pour nav mois
 
-  // ========== SAUVEGARDE ==========
-  function save() {
-    try { localStorage.setItem('tracker_data_v3', JSON.stringify(state)); } catch(e) {}
+  // ========== SAUVEGARDE MULTI-COUCHES ==========
+  // Safari iOS peut nettoyer localStorage après inactivité prolongée.
+  // On utilise 3 systèmes de stockage en parallèle pour maximum de sécurité :
+  //  1. IndexedDB (persistant, ne s'efface pas)
+  //  2. localStorage (rapide, pour l'immédiat)
+  //  3. Cookies (backup de dernière chance, limité à 4KB)
+
+  const DB_NAME = 'MonCombatDB';
+  const STORE_NAME = 'state';
+  const KEY = 'main';
+  const LS_KEY = 'tracker_data_v3';
+  const COOKIE_KEY = 'tracker_backup';
+
+  let dbPromise = null;
+
+  function openDB() {
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise((resolve, reject) => {
+      if (!window.indexedDB) {
+        resolve(null);
+        return;
+      }
+      try {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+        req.onblocked = () => resolve(null);
+      } catch(e) {
+        resolve(null);
+      }
+    });
+    return dbPromise;
   }
-  function load() {
+
+  async function saveToIDB(data) {
     try {
-      // Migration depuis v1/v2
-      const v3 = localStorage.getItem('tracker_data_v3');
-      if (v3) { Object.assign(state, JSON.parse(v3)); return; }
-      const old = localStorage.getItem('tracker_data');
-      if (old) {
-        const o = JSON.parse(old);
-        state.startDate = o.startDate || null;
-        state.record = o.record || 0;
-        state.history = o.history || [];
-        state.journal = o.journal || {};
-        state.why = o.why || '';
-        state.fast = o.fast || {};
-        save(); // converti
+      const db = await openDB();
+      if (!db) return false;
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.put(data, KEY);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => resolve(false);
+      });
+    } catch(e) { return false; }
+  }
+
+  async function loadFromIDB() {
+    try {
+      const db = await openDB();
+      if (!db) return null;
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(KEY);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+    } catch(e) { return null; }
+  }
+
+  function saveToCookie(data) {
+    try {
+      // Les cookies sont limités à ~4KB, on sauvegarde juste l'essentiel
+      const essential = {
+        startDate: data.startDate,
+        record: data.record,
+        history: data.history,
+        dailyCheckins: data.dailyCheckins,
+        why: data.why
+      };
+      const str = JSON.stringify(essential);
+      if (str.length < 3800) {
+        // Expire dans 10 ans
+        const date = new Date();
+        date.setTime(date.getTime() + (10 * 365 * 24 * 60 * 60 * 1000));
+        document.cookie = `${COOKIE_KEY}=${encodeURIComponent(str)};expires=${date.toUTCString()};path=/;SameSite=Strict`;
       }
     } catch(e) {}
   }
 
+  function loadFromCookie() {
+    try {
+      const match = document.cookie.match(new RegExp(`${COOKIE_KEY}=([^;]+)`));
+      if (match) {
+        return JSON.parse(decodeURIComponent(match[1]));
+      }
+    } catch(e) {}
+    return null;
+  }
+
+  // Save (asynchrone mais ne bloque jamais)
+  function save() {
+    const data = JSON.parse(JSON.stringify(state)); // clone propre
+    // 1. localStorage (instantané)
+    try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(e) {}
+    // 2. Cookie (backup léger mais fiable)
+    saveToCookie(data);
+    // 3. IndexedDB (async, persistant)
+    saveToIDB(data).catch(() => {});
+  }
+
+  // Load : essaye tous les systèmes et prend le plus récent/complet
+  async function loadAsync() {
+    let best = null;
+    let sources = [];
+
+    // Tenter IndexedDB
+    try {
+      const idb = await loadFromIDB();
+      if (idb && idb.startDate) {
+        sources.push({ src: 'idb', data: idb });
+      }
+    } catch(e) {}
+
+    // Tenter localStorage
+    try {
+      const ls = localStorage.getItem(LS_KEY);
+      if (ls) {
+        const parsed = JSON.parse(ls);
+        if (parsed && parsed.startDate) {
+          sources.push({ src: 'ls', data: parsed });
+        }
+      }
+    } catch(e) {}
+
+    // Tenter cookie
+    const cookie = loadFromCookie();
+    if (cookie && cookie.startDate) {
+      sources.push({ src: 'cookie', data: cookie });
+    }
+
+    // Migration depuis ancien format (tracker_data)
+    try {
+      const old = localStorage.getItem('tracker_data');
+      if (old && sources.length === 0) {
+        const parsed = JSON.parse(old);
+        if (parsed && parsed.startDate) {
+          sources.push({ src: 'legacy', data: parsed });
+        }
+      }
+    } catch(e) {}
+
+    if (sources.length === 0) return;
+
+    // Choisir la source la plus complète (celle qui a le plus de données)
+    // Priorité : IndexedDB > localStorage > cookie
+    // Mais on préfère celle avec plus de dailyCheckins / history
+    const priority = { idb: 3, ls: 2, cookie: 1, legacy: 2 };
+    sources.sort((a, b) => {
+      const aScore = (a.data.dailyCheckins ? Object.keys(a.data.dailyCheckins).length : 0) * 10 +
+                     (a.data.history ? a.data.history.length : 0) * 5 +
+                     (priority[a.src] || 0);
+      const bScore = (b.data.dailyCheckins ? Object.keys(b.data.dailyCheckins).length : 0) * 10 +
+                     (b.data.history ? b.data.history.length : 0) * 5 +
+                     (priority[b.src] || 0);
+      return bScore - aScore;
+    });
+
+    best = sources[0].data;
+    Object.assign(state, best);
+
+    // Re-sauvegarder dans tous les systèmes pour les synchroniser
+    save();
+  }
+
+  // Version synchrone (fallback pour le démarrage)
+  function load() {
+    try {
+      const ls = localStorage.getItem(LS_KEY);
+      if (ls) {
+        const parsed = JSON.parse(ls);
+        if (parsed && parsed.startDate) {
+          Object.assign(state, parsed);
+          return true;
+        }
+      }
+    } catch(e) {}
+    // Fallback cookie
+    const cookie = loadFromCookie();
+    if (cookie && cookie.startDate) {
+      Object.assign(state, cookie);
+      return true;
+    }
+    // Legacy
+    try {
+      const old = localStorage.getItem('tracker_data');
+      if (old) {
+        const o = JSON.parse(old);
+        if (o && o.startDate) {
+          state.startDate = o.startDate || null;
+          state.record = o.record || 0;
+          state.history = o.history || [];
+          state.journal = o.journal || {};
+          state.why = o.why || '';
+          state.fast = o.fast || {};
+          return true;
+        }
+      }
+    } catch(e) {}
+    return false;
+  }
+
   // ========== INIT ==========
-  function init() {
+  async function init() {
+    // Charge d'abord synchroniquement pour afficher rapidement
     load();
+    // Puis recharge depuis IndexedDB (plus fiable) asynchroniquement
+    await loadAsync();
+
     if (!state.startDate) {
       state.startDate = todayStr();
       save();
@@ -2030,6 +2221,11 @@
     setTimeout(() => {
       checkPendingCheckins();
     }, 500);
+
+    // Demander la permission pour stockage persistant (iOS Safari)
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
   }
 
   function todayStr() {
@@ -3056,16 +3252,29 @@
   init();
   setInterval(renderAll, 60000);
 
-  // Re-vérifier les check-ins si l'utilisateur revient sur la page (changement de jour)
+  // Sauvegarde périodique agressive (toutes les 30s) - double sécurité
+  setInterval(() => { save(); }, 30000);
+
+  // Re-vérifier les check-ins ET re-charger les données quand on revient sur la page
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
-      renderAll();
-      // Si la popup n'est pas déjà ouverte, vérifier les check-ins en attente
-      if (!document.getElementById('checkinModal').classList.contains('active')) {
-        setTimeout(checkPendingCheckins, 300);
-      }
+      // Recharger depuis IndexedDB pour récupérer des données potentiellement perdues
+      loadAsync().then(() => {
+        renderAll();
+        if (!document.getElementById('checkinModal').classList.contains('active')) {
+          setTimeout(checkPendingCheckins, 300);
+        }
+      });
+    } else {
+      // Safari va potentiellement tuer le tab — sauvegarde d'urgence
+      save();
     }
   });
+
+  // Avant de quitter la page : sauvegarde d'urgence
+  window.addEventListener('pagehide', () => { save(); });
+  window.addEventListener('beforeunload', () => { save(); });
+  window.addEventListener('blur', () => { save(); });
 </script>
 
 </body>
