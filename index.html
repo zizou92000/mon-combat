@@ -426,66 +426,6 @@
     font-weight: 500;
   }
 
-  /* Compteurs dhikr */
-  .dhikr-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .dhikr-item {
-    background: rgba(10, 24, 71, 0.5);
-    border: 1px solid var(--border-soft);
-    border-radius: 4px;
-    padding: 14px 12px;
-    text-align: center;
-  }
-  .dhikr-ar {
-    font-family: 'Amiri', serif;
-    color: var(--gold);
-    font-size: 1.1em;
-    margin-bottom: 4px;
-    min-height: 32px;
-  }
-  .dhikr-label {
-    font-style: italic;
-    color: var(--ivory-dim);
-    font-size: 0.78em;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-  }
-  .dhikr-count {
-    font-size: 1.8em;
-    color: var(--gold-bright);
-    margin: 6px 0;
-    font-weight: 300;
-    line-height: 1;
-  }
-  .dhikr-target {
-    font-size: 0.78em;
-    color: var(--ivory-dim);
-    font-style: italic;
-    margin-bottom: 8px;
-  }
-  .dhikr-btns {
-    display: flex;
-    gap: 4px;
-    justify-content: center;
-  }
-  .dhikr-btn {
-    background: rgba(212, 169, 74, 0.1);
-    border: 1px solid var(--border-gold);
-    color: var(--gold-bright);
-    padding: 6px 10px;
-    border-radius: 2px;
-    font-size: 0.82em;
-    cursor: pointer;
-    font-family: 'Cormorant Garamond', serif;
-    min-height: 36px;
-    min-width: 40px;
-    touch-action: manipulation;
-  }
-  .dhikr-btn:active { background: rgba(212, 169, 74, 0.25); }
-
   /* Dua istighfar */
   .dua-istighfar {
     background: linear-gradient(180deg, rgba(26, 47, 124, 0.4) 0%, rgba(10, 24, 71, 0.6) 100%);
@@ -913,6 +853,486 @@
     font-style: italic;
   }
 
+  /* === CHECK-IN QUOTIDIEN === */
+  .checkin-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 10, 35, 0.98);
+    z-index: 2000;
+    padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    backdrop-filter: blur(12px);
+  }
+  .checkin-modal.active { display: flex; align-items: center; justify-content: center; }
+  .checkin-box {
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-deep) 100%);
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    padding: 30px 22px;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    max-height: 92vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .checkin-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
+  }
+  .checkin-title {
+    font-family: 'Amiri', serif;
+    color: var(--gold);
+    font-size: 1.5em;
+    margin-bottom: 8px;
+  }
+  .checkin-subtitle {
+    font-style: italic;
+    color: var(--ivory-dim);
+    font-size: 0.95em;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .checkin-day-info {
+    font-style: italic;
+    color: var(--ivory);
+    font-size: 1.05em;
+    margin: 18px 0 10px;
+    line-height: 1.5;
+  }
+  .checkin-date {
+    color: var(--gold-bright);
+    font-size: 1.15em;
+    letter-spacing: 1.5px;
+    margin: 14px 0 20px;
+    font-weight: 500;
+  }
+  .checkin-question {
+    font-style: italic;
+    color: var(--ivory);
+    font-size: 1.1em;
+    margin: 24px 0 20px;
+    line-height: 1.5;
+  }
+  .checkin-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .checkin-btn {
+    padding: 20px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    letter-spacing: 2px;
+    font-size: 1em;
+    touch-action: manipulation;
+    min-height: 70px;
+    transition: transform 0.1s;
+    font-weight: 500;
+  }
+  .checkin-btn:active { transform: scale(0.97); }
+  .checkin-btn-tenu {
+    background: linear-gradient(135deg, rgba(134, 176, 148, 0.25) 0%, rgba(100, 140, 115, 0.15) 100%);
+    border: 1px solid var(--green-soft);
+    color: #b8d8c2;
+  }
+  .checkin-btn-tombe {
+    background: linear-gradient(135deg, rgba(139, 42, 42, 0.3) 0%, rgba(92, 24, 24, 0.2) 100%);
+    border: 1px solid rgba(196, 69, 69, 0.5);
+    color: #e8a0a0;
+  }
+  .checkin-icon {
+    font-size: 1.5em;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .checkin-progress {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+    color: var(--ivory-dim);
+    font-style: italic;
+    font-size: 0.85em;
+  }
+  .checkin-reminder {
+    background: rgba(26, 47, 124, 0.4);
+    border: 1px solid var(--border-soft);
+    padding: 12px 14px;
+    border-radius: 3px;
+    margin-top: 18px;
+    color: var(--gold-bright);
+    font-size: 0.85em;
+    font-style: italic;
+    font-family: 'Amiri', serif;
+  }
+
+  /* === CHECK-IN INDICATEUR SUR ACCUEIL === */
+  .checkin-card {
+    background: linear-gradient(135deg, rgba(201, 169, 97, 0.15) 0%, rgba(154, 127, 69, 0.08) 100%);
+    border: 1px solid var(--gold);
+    padding: 18px;
+    border-radius: 6px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .checkin-card.done {
+    background: linear-gradient(135deg, rgba(134, 176, 148, 0.15) 0%, rgba(100, 140, 115, 0.08) 100%);
+    border-color: var(--green-soft);
+  }
+  .checkin-card-label {
+    font-size: 0.75em;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .checkin-card.done .checkin-card-label { color: var(--green-soft); }
+  .checkin-card-status {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--ivory);
+    font-size: 1.05em;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .checkin-card button {
+    background: rgba(201, 169, 97, 0.25);
+    color: var(--gold-bright);
+    border: 1px solid var(--gold);
+    padding: 10px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    letter-spacing: 2px;
+    font-size: 0.9em;
+    touch-action: manipulation;
+    min-height: 42px;
+  }
+
+  /* === HISTORIQUE QUOTIDIEN VISUEL === */
+  .daily-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 10px 4px;
+    justify-content: center;
+  }
+  .daily-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    background: rgba(21, 37, 68, 0.5);
+    border: 1px solid var(--border-soft);
+    position: relative;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .daily-dot.tenu { background: rgba(134, 176, 148, 0.55); border-color: var(--green-soft); }
+  .daily-dot.tombe { background: rgba(196, 69, 69, 0.5); border-color: rgba(196, 69, 69, 0.7); }
+  .daily-dot.future { opacity: 0.2; cursor: default; }
+  .daily-dot.today { border: 2px solid var(--gold); }
+  .daily-tooltip-container { position: relative; }
+  .daily-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+    text-align: center;
+  }
+  .daily-stat-box {
+    padding: 10px 6px;
+    background: rgba(21, 37, 68, 0.4);
+    border-radius: 3px;
+    border: 1px solid var(--border-soft);
+  }
+  .daily-stat-val {
+    font-size: 1.3em;
+    color: var(--gold);
+    line-height: 1;
+    font-weight: 300;
+  }
+  .daily-stat-lbl {
+    font-size: 0.7em;
+    color: var(--ivory-dim);
+    font-style: italic;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* === TRACKER FARD === */
+  .fard-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .fard-stat-main {
+    background: linear-gradient(180deg, rgba(26, 47, 124, 0.6) 0%, rgba(17, 36, 99, 0.4) 100%);
+    border: 1px solid var(--border-gold);
+    border-radius: 4px;
+    padding: 18px 10px;
+    text-align: center;
+  }
+  .fard-stat-value {
+    font-size: 1.9em;
+    color: var(--gold-bright);
+    line-height: 1;
+    font-weight: 300;
+    margin-bottom: 4px;
+  }
+  .fard-stat-label {
+    font-size: 0.7em;
+    color: var(--ivory-dim);
+    font-style: italic;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .fard-stat-sub {
+    font-size: 0.78em;
+    color: var(--gold-dim);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  /* Streaks Fajr & Isha */
+  .streak-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .streak-box {
+    background: linear-gradient(135deg, rgba(201, 169, 97, 0.12) 0%, rgba(154, 127, 69, 0.06) 100%);
+    border: 1px solid var(--border-gold);
+    border-radius: 4px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .streak-box.zero {
+    background: rgba(21, 37, 68, 0.4);
+    border-color: var(--border-soft);
+  }
+  .streak-title {
+    font-size: 0.75em;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .streak-box.zero .streak-title { color: var(--ivory-dim); }
+  .streak-value {
+    font-size: 1.6em;
+    color: var(--gold-bright);
+    line-height: 1;
+    font-weight: 300;
+  }
+  .streak-box.zero .streak-value { color: var(--ivory-dim); }
+  .streak-flame {
+    font-size: 1.1em;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .streak-label {
+    font-size: 0.72em;
+    color: var(--ivory-dim);
+    font-style: italic;
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* Calendrier fard */
+  .fard-cal-title {
+    font-size: 0.72em;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 18px 0 10px;
+    font-weight: 500;
+  }
+  .fard-cal-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    padding: 8px 2px;
+    justify-content: center;
+  }
+  .fard-day {
+    width: 22px;
+    height: 22px;
+    border-radius: 3px;
+    border: 1px solid var(--border-soft);
+    background: rgba(21, 37, 68, 0.4);
+    cursor: pointer;
+    touch-action: manipulation;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6em;
+    color: var(--ivory-dim);
+    font-weight: 600;
+  }
+  .fard-day.future { opacity: 0.15; cursor: default; }
+  .fard-day.today { border: 2px solid var(--gold); }
+  /* Couleurs selon 0-5 fard */
+  .fard-day.f5 { background: linear-gradient(135deg, #e5cc85 0%, #c9a961 100%); color: #0a1847; border-color: var(--gold-bright); }
+  .fard-day.f4 { background: rgba(201, 169, 97, 0.55); border-color: var(--gold); color: var(--ivory); }
+  .fard-day.f3 { background: rgba(201, 169, 97, 0.28); border-color: var(--gold-dim); color: var(--ivory-dim); }
+  .fard-day.f2 { background: rgba(184, 120, 60, 0.3); border-color: rgba(184, 120, 60, 0.5); color: var(--ivory-dim); }
+  .fard-day.f1 { background: rgba(196, 69, 69, 0.25); border-color: rgba(196, 69, 69, 0.45); color: var(--ivory-dim); }
+  .fard-day.f0 { background: rgba(196, 69, 69, 0.12); border-color: rgba(196, 69, 69, 0.3); color: var(--ivory-dim); opacity: 0.7; }
+
+  .fard-cal-legend {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    font-size: 0.72em;
+    color: var(--ivory-dim);
+    font-style: italic;
+  }
+  .fard-legend-item { display: flex; align-items: center; gap: 5px; }
+  .fard-legend-box { width: 14px; height: 14px; border-radius: 2px; border: 1px solid transparent; }
+
+  /* Popup détail jour fard */
+  .fard-detail-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 10, 35, 0.95);
+    z-index: 1500;
+    padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    backdrop-filter: blur(10px);
+  }
+  .fard-detail-modal.active { display: flex; align-items: center; justify-content: center; }
+  .fard-detail-box {
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-deep) 100%);
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    padding: 26px 20px;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .fard-detail-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold);
+    font-size: 1.15em;
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+  }
+  .fard-detail-date {
+    color: var(--gold-bright);
+    font-size: 1em;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+  .fard-detail-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .fard-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: rgba(21, 37, 68, 0.4);
+    border: 1px solid var(--border-soft);
+    border-radius: 3px;
+    cursor: pointer;
+    touch-action: manipulation;
+    min-height: 44px;
+  }
+  .fard-detail-row.done {
+    background: rgba(201, 169, 97, 0.15);
+    border-color: var(--gold);
+  }
+  .fard-detail-row-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--ivory);
+    font-size: 0.95em;
+    letter-spacing: 1px;
+  }
+  .fard-detail-row.done .fard-detail-row-name { color: var(--gold-bright); }
+  .fard-detail-row-ar {
+    font-family: 'Amiri', serif;
+    color: var(--gold);
+    font-size: 1.1em;
+    margin-right: 10px;
+  }
+  .fard-detail-row-check {
+    color: var(--gold);
+    font-size: 1.2em;
+  }
+  .fard-detail-bottom {
+    font-family: 'Amiri', serif;
+    color: var(--gold-bright);
+    font-size: 1em;
+    letter-spacing: 1px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .fard-detail-close {
+    background: rgba(201, 169, 97, 0.15);
+    color: var(--gold-bright);
+    border: 1px solid var(--gold);
+    padding: 12px 24px;
+    border-radius: 3px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    letter-spacing: 2px;
+    font-size: 0.9em;
+    cursor: pointer;
+    margin-top: 16px;
+    min-height: 44px;
+    touch-action: manipulation;
+    width: 100%;
+  }
+
+  /* Rappel bienveillant si prière ratée */
+  .fard-reminder {
+    background: rgba(184, 120, 60, 0.12);
+    border: 1px solid rgba(201, 169, 97, 0.35);
+    border-radius: 3px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .fard-reminder-ar {
+    font-family: 'Amiri', serif;
+    color: var(--gold-bright);
+    font-size: 1.05em;
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  .fard-reminder-fr {
+    font-style: italic;
+    color: var(--ivory-dim);
+    font-size: 0.85em;
+    line-height: 1.5;
+  }
+
   /* Desktop */
   @media (min-width: 768px) {
     body { padding: 30px; }
@@ -922,7 +1342,6 @@
     .counter-number { font-size: 7em; }
     .ayah-arabic { font-size: 1.8em; }
     .btn-pulsion { padding: 26px; font-size: 1.1em; }
-    .dhikr-grid { grid-template-columns: repeat(4, 1fr); }
     .stats-grid { grid-template-columns: repeat(4, 1fr); }
     .chart-bars { height: 220px; }
   }
@@ -973,6 +1392,13 @@
         <div class="phase-title" id="phaseTitle">Phase I — Jours 1-4</div>
         <div class="phase-desc" id="phaseDesc">Tu fais confiance à ta résistance.</div>
       </div>
+    </div>
+
+    <!-- CARTE CHECK-IN QUOTIDIEN -->
+    <div class="checkin-card" id="checkinCard" style="display: none;">
+      <div class="checkin-card-label" id="checkinCardLabel">◆ Check-in du jour ◆</div>
+      <div class="checkin-card-status" id="checkinCardStatus">Comment s'est passée ta journée ?</div>
+      <button onclick="openCheckinModal()" id="checkinCardBtn">Faire mon check-in</button>
     </div>
 
     <div class="diamond">◆ ◆ ◆</div>
@@ -1164,56 +1590,85 @@
       </div>
     </div>
 
-    <div class="section-title">◆ Dhikr du jour ◆</div>
+    <button class="btn btn-danger btn-full" onclick="resetPrayersToday()" style="margin-top: 20px;">Réinitialiser le jour</button>
 
-    <div class="dhikr-grid">
-      <div class="dhikr-item">
-        <div class="dhikr-ar">سُبْحَانَ اللَّهِ</div>
-        <div class="dhikr-label">Subhan Allah</div>
-        <div class="dhikr-count" id="dhikr_subhan">0</div>
-        <div class="dhikr-target">cible : 33</div>
-        <div class="dhikr-btns">
-          <button class="dhikr-btn" onclick="decDhikr('subhan')">−</button>
-          <button class="dhikr-btn" onclick="incDhikr('subhan')">+1</button>
-          <button class="dhikr-btn" onclick="incDhikr('subhan', 10)">+10</button>
-        </div>
+    <div class="diamond">◆ ◆ ◆</div>
+
+    <div class="section-title">◆ Mon Suivi des Fard ◆</div>
+
+    <!-- Rappel bienveillant (si prière ratée récemment) -->
+    <div class="fard-reminder" id="fardReminder" style="display: none;">
+      <div class="fard-reminder-ar" id="fardReminderAr">إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ</div>
+      <div class="fard-reminder-fr" id="fardReminderFr">« Certes la prière préserve de la turpitude et du blâmable » — Al-Ankabut 29:45</div>
+    </div>
+
+    <!-- Stats principales -->
+    <div class="fard-stats-row">
+      <div class="fard-stat-main">
+        <div class="fard-stat-value" id="fardMonthScore">0/0</div>
+        <div class="fard-stat-label">Ce mois</div>
+        <div class="fard-stat-sub" id="fardMonthPct">—</div>
       </div>
-      <div class="dhikr-item">
-        <div class="dhikr-ar">اَلْحَمْدُ لِلَّهِ</div>
-        <div class="dhikr-label">Alhamdulillah</div>
-        <div class="dhikr-count" id="dhikr_hamd">0</div>
-        <div class="dhikr-target">cible : 33</div>
-        <div class="dhikr-btns">
-          <button class="dhikr-btn" onclick="decDhikr('hamd')">−</button>
-          <button class="dhikr-btn" onclick="incDhikr('hamd')">+1</button>
-          <button class="dhikr-btn" onclick="incDhikr('hamd', 10)">+10</button>
-        </div>
+      <div class="fard-stat-main">
+        <div class="fard-stat-value" id="fard30Score">0/0</div>
+        <div class="fard-stat-label">30 jours</div>
+        <div class="fard-stat-sub" id="fard30Pct">—</div>
       </div>
-      <div class="dhikr-item">
-        <div class="dhikr-ar">اَللَّهُ أَكْبَر</div>
-        <div class="dhikr-label">Allahu Akbar</div>
-        <div class="dhikr-count" id="dhikr_akbar">0</div>
-        <div class="dhikr-target">cible : 34</div>
-        <div class="dhikr-btns">
-          <button class="dhikr-btn" onclick="decDhikr('akbar')">−</button>
-          <button class="dhikr-btn" onclick="incDhikr('akbar')">+1</button>
-          <button class="dhikr-btn" onclick="incDhikr('akbar', 10)">+10</button>
-        </div>
-      </div>
-      <div class="dhikr-item">
-        <div class="dhikr-ar">أَسْتَغْفِرُ اللَّهَ</div>
-        <div class="dhikr-label">Istighfar</div>
-        <div class="dhikr-count" id="dhikr_istighfar">0</div>
-        <div class="dhikr-target">cible : 100</div>
-        <div class="dhikr-btns">
-          <button class="dhikr-btn" onclick="decDhikr('istighfar')">−</button>
-          <button class="dhikr-btn" onclick="incDhikr('istighfar')">+1</button>
-          <button class="dhikr-btn" onclick="incDhikr('istighfar', 10)">+10</button>
-        </div>
+      <div class="fard-stat-main">
+        <div class="fard-stat-value" id="fardTotalScore">0</div>
+        <div class="fard-stat-label">Total</div>
+        <div class="fard-stat-sub">fard accomplis</div>
       </div>
     </div>
 
-    <button class="btn btn-danger btn-full" onclick="resetPrayersToday()" style="margin-top: 20px;">Réinitialiser le jour</button>
+    <!-- Streaks Fajr & Isha -->
+    <div class="streak-row">
+      <div class="streak-box" id="fajrStreakBox">
+        <div class="streak-title">◆ Streak Fajr ◆</div>
+        <div class="streak-value"><span class="streak-flame" id="fajrFlame">🔥</span><span id="fajrStreak">0</span></div>
+        <div class="streak-label" id="fajrStreakLabel">jours consécutifs</div>
+      </div>
+      <div class="streak-box" id="ishaStreakBox">
+        <div class="streak-title">◆ Streak Isha ◆</div>
+        <div class="streak-value"><span class="streak-flame" id="ishaFlame">🔥</span><span id="ishaStreak">0</span></div>
+        <div class="streak-label" id="ishaStreakLabel">jours consécutifs</div>
+      </div>
+    </div>
+
+    <!-- Calendrier 60 jours -->
+    <div class="fard-cal-title">— Les 60 derniers jours —</div>
+    <div class="fard-cal-grid" id="fardCalGrid"></div>
+
+    <div class="fard-cal-legend">
+      <div class="fard-legend-item">
+        <div class="fard-legend-box" style="background: linear-gradient(135deg, #e5cc85 0%, #c9a961 100%);"></div>
+        <span>5/5</span>
+      </div>
+      <div class="fard-legend-item">
+        <div class="fard-legend-box" style="background: rgba(201, 169, 97, 0.55);"></div>
+        <span>4/5</span>
+      </div>
+      <div class="fard-legend-item">
+        <div class="fard-legend-box" style="background: rgba(201, 169, 97, 0.28);"></div>
+        <span>3/5</span>
+      </div>
+      <div class="fard-legend-item">
+        <div class="fard-legend-box" style="background: rgba(184, 120, 60, 0.3);"></div>
+        <span>2/5</span>
+      </div>
+      <div class="fard-legend-item">
+        <div class="fard-legend-box" style="background: rgba(196, 69, 69, 0.25);"></div>
+        <span>1/5</span>
+      </div>
+      <div class="fard-legend-item">
+        <div class="fard-legend-box" style="background: rgba(196, 69, 69, 0.12);"></div>
+        <span>0/5</span>
+      </div>
+    </div>
+
+    <p style="text-align: center; color: var(--ivory-dim); font-style: italic; font-size: 0.82em; margin-top: 14px; line-height: 1.5;">
+      Tape un jour pour voir le détail ou le modifier
+    </p>
 
   </div>
 
@@ -1280,6 +1735,40 @@
       <p class="card-description">Nombre de jours propres par mois</p>
       <div id="chartContainer">
         <div class="chart-empty">Pas encore de données.<br>Continue et ton graphique apparaîtra ici.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tes check-ins quotidiens</div>
+      <p class="card-description">Les 60 derniers jours</p>
+      <div class="daily-grid" id="dailyGrid"></div>
+      <div class="daily-stats" id="dailyStatsGrid">
+        <div class="daily-stat-box">
+          <div class="daily-stat-val" id="statTenu">0</div>
+          <div class="daily-stat-lbl">Jours tenus</div>
+        </div>
+        <div class="daily-stat-box">
+          <div class="daily-stat-val" id="statTombe">0</div>
+          <div class="daily-stat-lbl">Rechutes</div>
+        </div>
+        <div class="daily-stat-box">
+          <div class="daily-stat-val" id="statRegul">0%</div>
+          <div class="daily-stat-lbl">Régularité</div>
+        </div>
+      </div>
+      <div class="cal-legend" style="margin-top: 14px;">
+        <div class="cal-legend-item">
+          <div class="cal-legend-box" style="background: rgba(134, 176, 148, 0.55); border-color: var(--green-soft);"></div>
+          <span>Tenu</span>
+        </div>
+        <div class="cal-legend-item">
+          <div class="cal-legend-box" style="background: rgba(196, 69, 69, 0.5); border-color: rgba(196, 69, 69, 0.7);"></div>
+          <span>Tombé</span>
+        </div>
+        <div class="cal-legend-item">
+          <div class="cal-legend-box" style="background: rgba(21, 37, 68, 0.5);"></div>
+          <span>Non validé</span>
+        </div>
       </div>
     </div>
 
@@ -1391,6 +1880,77 @@
   </div>
 </div>
 
+<!-- MODAL CHECK-IN QUOTIDIEN -->
+<div class="checkin-modal" id="checkinModal">
+  <div class="checkin-box">
+    <div class="checkin-title" id="checkinModalTitle">◆ Check-in ◆</div>
+    <div class="checkin-subtitle">— Sois honnête avec toi-même —</div>
+
+    <div class="checkin-day-info" id="checkinDayInfo">
+      Comment s'est passée ta journée ?
+    </div>
+    <div class="checkin-date" id="checkinDateLabel">—</div>
+
+    <div class="checkin-reminder" id="checkinReminder">
+      « Allah est avec toi »
+    </div>
+
+    <div class="checkin-question">As-tu tenu ou es-tu tombé ?</div>
+
+    <div class="checkin-buttons">
+      <button class="checkin-btn checkin-btn-tenu" onclick="submitCheckin('tenu')">
+        <span class="checkin-icon">✓</span>
+        J'ai tenu
+      </button>
+      <button class="checkin-btn checkin-btn-tombe" onclick="submitCheckin('tombe')">
+        <span class="checkin-icon">✗</span>
+        Je suis tombé
+      </button>
+    </div>
+
+    <div class="checkin-progress" id="checkinProgress">
+      1 / 1
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DÉTAIL JOUR FARD -->
+<div class="fard-detail-modal" id="fardDetailModal">
+  <div class="fard-detail-box">
+    <div class="fard-detail-title">— Détail du jour —</div>
+    <div class="fard-detail-date" id="fardDetailDate">—</div>
+    <div class="fard-detail-rows">
+      <div class="fard-detail-row" data-fard="fajr" onclick="toggleFardInDetail(this)">
+        <div><span class="fard-detail-row-ar">الفجر</span></div>
+        <div class="fard-detail-row-name">Fajr</div>
+        <div class="fard-detail-row-check">◇</div>
+      </div>
+      <div class="fard-detail-row" data-fard="dhuhr" onclick="toggleFardInDetail(this)">
+        <div><span class="fard-detail-row-ar">الظهر</span></div>
+        <div class="fard-detail-row-name">Dhuhr</div>
+        <div class="fard-detail-row-check">◇</div>
+      </div>
+      <div class="fard-detail-row" data-fard="asr" onclick="toggleFardInDetail(this)">
+        <div><span class="fard-detail-row-ar">العصر</span></div>
+        <div class="fard-detail-row-name">Asr</div>
+        <div class="fard-detail-row-check">◇</div>
+      </div>
+      <div class="fard-detail-row" data-fard="maghrib" onclick="toggleFardInDetail(this)">
+        <div><span class="fard-detail-row-ar">المغرب</span></div>
+        <div class="fard-detail-row-name">Maghrib</div>
+        <div class="fard-detail-row-check">◇</div>
+      </div>
+      <div class="fard-detail-row" data-fard="isha" onclick="toggleFardInDetail(this)">
+        <div><span class="fard-detail-row-ar">العشاء</span></div>
+        <div class="fard-detail-row-name">Isha</div>
+        <div class="fard-detail-row-check">◇</div>
+      </div>
+    </div>
+    <div class="fard-detail-bottom" id="fardDetailTotal">0/5 fard</div>
+    <button class="fard-detail-close" onclick="closeFardDetailModal()">Fermer</button>
+  </div>
+</div>
+
 <script>
   // ========== RAK'AAT COUNT PAR ITEM ==========
   const RAKAAT = {
@@ -1424,9 +1984,10 @@
     why: '',
     prayers: {},        // {date: {item: true/false}}
     extraNafila: {},    // {date: number}
-    dhikr: {},          // {date: {subhan, hamd, akbar, istighfar}}
     fast: {},           // {date: true}
-    relapseDates: []    // [date strings]
+    relapseDates: [],   // [date strings]
+    dailyCheckins: {},  // {date: 'tenu' | 'tombe'}
+    lastCheckinDate: null // dernière date où on a demandé
   };
 
   let currentMonthOffset = 0; // pour nav mois
@@ -1461,12 +2022,30 @@
       state.startDate = todayStr();
       save();
     }
+    if (!state.dailyCheckins) state.dailyCheckins = {};
     document.getElementById('dateInput').value = state.startDate;
     renderAll();
+
+    // Vérifier s'il y a des check-ins en attente
+    setTimeout(() => {
+      checkPendingCheckins();
+    }, 500);
   }
 
   function todayStr() {
     return new Date().toISOString().split('T')[0];
+  }
+
+  // Helper: décaler une date de N jours
+  function dateOffset(dateStr, offset) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + offset);
+    return d.toISOString().split('T')[0];
+  }
+
+  function formatDateFr(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
   // ========== TABS ==========
@@ -1497,12 +2076,574 @@
     return { title: 'Phase VI — Stabilisation', desc: 'Ta vie reconstituée prend le relais. الحمدلله' };
   }
 
+  // ========== CHECK-IN QUOTIDIEN ==========
+  // État local pour gérer la queue des jours à valider
+  let checkinQueue = [];
+  let checkinCurrent = null;
+
+  // Détermine les jours qui ont besoin d'un check-in
+  function getPendingCheckins() {
+    const today = todayStr();
+    const pending = [];
+    const start = new Date(state.startDate);
+    start.setHours(0,0,0,0);
+    const now = new Date();
+    now.setHours(0,0,0,0);
+
+    // Limite de 7 jours en arrière pour rattrapage
+    const maxDaysBack = 7;
+    const firstCheck = new Date(now);
+    firstCheck.setDate(firstCheck.getDate() - maxDaysBack);
+    const startCheck = firstCheck > start ? firstCheck : start;
+
+    // Itérer de startCheck jusqu'à hier (on ne demande pas pour aujourd'hui tant que la journée n'est pas finie)
+    // Mais on veut aussi permettre de valider aujourd'hui si l'utilisateur le veut
+    // Règle : on demande pour TOUT jour passé non validé, + aujourd'hui si pas encore validé
+    const cursor = new Date(startCheck);
+    while (cursor <= now) {
+      const dateStr = cursor.toISOString().split('T')[0];
+      if (!state.dailyCheckins[dateStr]) {
+        pending.push(dateStr);
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return pending;
+  }
+
+  function checkPendingCheckins() {
+    const pending = getPendingCheckins();
+    if (pending.length === 0) return;
+
+    // Si seulement aujourd'hui est en attente, on affiche la carte sans forcer la popup
+    // Si plusieurs jours en attente, on force la popup
+    const today = todayStr();
+    const hasBackfill = pending.some(d => d !== today);
+
+    if (hasBackfill) {
+      // Lancer la popup avec rattrapage
+      checkinQueue = pending.slice();
+      showNextCheckin();
+    }
+    // Si juste aujourd'hui, la carte sur l'accueil suffit
+  }
+
+  function showNextCheckin() {
+    if (checkinQueue.length === 0) {
+      closeCheckinModal();
+      renderAll();
+      return;
+    }
+    checkinCurrent = checkinQueue[0];
+    const total = checkinQueue.length;
+
+    const dateFr = formatDateFr(checkinCurrent);
+    const isToday = checkinCurrent === todayStr();
+    const isYesterday = checkinCurrent === dateOffset(todayStr(), -1);
+
+    let prefix = '';
+    if (isToday) prefix = 'Aujourd\'hui — ';
+    else if (isYesterday) prefix = 'Hier — ';
+
+    document.getElementById('checkinDateLabel').textContent = prefix + dateFr;
+
+    // Message selon combien de jours restent
+    const remaining = checkinQueue.length;
+    const info = document.getElementById('checkinDayInfo');
+    if (remaining > 1) {
+      info.innerHTML = `Tu as <strong>${remaining} jours</strong> à valider.<br>On commence par le plus ancien.`;
+    } else {
+      info.textContent = 'Comment s\'est passée cette journée ?';
+    }
+
+    // Rappel adaptatif selon la phase
+    const startD = new Date(state.startDate);
+    const checkD = new Date(checkinCurrent);
+    checkD.setHours(0,0,0,0);
+    startD.setHours(0,0,0,0);
+    const daysSinceStart = Math.max(0, Math.floor((checkD - startD) / (1000*60*60*24)));
+
+    const reminder = document.getElementById('checkinReminder');
+    if (daysSinceStart <= 4) {
+      reminder.innerHTML = '« Sois honnête avec Allah, Il est Raqîb — Témoin de tout »';
+    } else if (daysSinceStart <= 10) {
+      reminder.innerHTML = '« Zone de guerre — chaque jour tenu est une victoire »';
+    } else if (daysSinceStart <= 21) {
+      reminder.innerHTML = '« Ne relâche pas — le piège est de croire que tu contrôles »';
+    } else {
+      reminder.innerHTML = '« الحمدلله — continue sans te retourner »';
+    }
+
+    // Progress
+    document.getElementById('checkinProgress').textContent =
+      `Jour ${total - remaining + 1} / ${total}`;
+
+    document.getElementById('checkinModal').classList.add('active');
+    if (navigator.vibrate) navigator.vibrate(40);
+  }
+
+  function submitCheckin(resultat) {
+    if (!checkinCurrent) return;
+    const date = checkinCurrent;
+
+    if (resultat === 'tenu') {
+      state.dailyCheckins[date] = 'tenu';
+      save();
+      if (navigator.vibrate) navigator.vibrate(30);
+      // Passer au suivant
+      checkinQueue.shift();
+      checkinCurrent = null;
+      if (checkinQueue.length === 0) {
+        closeCheckinModal();
+        renderAll();
+      } else {
+        // petit délai pour le feedback visuel
+        setTimeout(showNextCheckin, 200);
+      }
+    } else {
+      // Tombé : demander une note et faire le reset
+      const note = prompt(
+        `Tu as rechuté le ${formatDateFr(date)}.\n\n` +
+        'Note ce qui a déclenché (pour repérer le pattern) :\n' +
+        '(ennui, 4h du matin, stress, solitude...)',
+        ''
+      );
+      if (note === null) return; // annulé, on ne fait rien
+
+      if (!confirm('Confirmer la rechute du ' + formatDateFr(date) + ' ?\n\nTon Jour 1 sera remis à ce jour.\nCe n\'est pas un échec, c\'est un repentir.')) return;
+
+      // Marquer le check-in
+      state.dailyCheckins[date] = 'tombe';
+
+      // Calcul : ajouter l'ancien streak à l'historique et recommencer à date+1
+      // Le jour de rechute lui-même compte comme un échec, donc les jours tenus = (date - startDate)
+      const startD = new Date(state.startDate);
+      const rechuteD = new Date(date);
+      startD.setHours(0,0,0,0);
+      rechuteD.setHours(0,0,0,0);
+      const daysTenus = Math.max(0, Math.floor((rechuteD - startD) / (1000*60*60*24)));
+
+      if (!state.history) state.history = [];
+      state.history.push({
+        date: state.startDate,
+        days: daysTenus,
+        note: note
+      });
+
+      // Nouveau Jour 1 = le jour suivant la rechute
+      const newStart = dateOffset(date, 1);
+      // Mais si newStart est dans le futur, on garde le jour lui-même
+      if (new Date(newStart) > new Date(todayStr())) {
+        state.startDate = todayStr();
+      } else {
+        state.startDate = newStart;
+      }
+
+      save();
+      document.getElementById('dateInput').value = state.startDate;
+
+      // Vider la queue car les jours après la rechute sont maintenant dans le nouveau streak
+      // On re-détermine les pending à partir du nouveau startDate
+      checkinQueue = [];
+      checkinCurrent = null;
+
+      closeCheckinModal();
+      renderAll();
+
+      // Re-vérifier s'il reste des jours à valider après le reset
+      setTimeout(() => {
+        const newPending = getPendingCheckins();
+        const hasBackfill = newPending.some(d => d !== todayStr());
+        if (hasBackfill) {
+          checkinQueue = newPending.slice();
+          showNextCheckin();
+        } else {
+          alert('🤍 Jour 1.\n\nTu es debout. On continue.\nالحمدلله');
+        }
+      }, 300);
+    }
+  }
+
+  function openCheckinModal() {
+    // Ouvre manuellement le check-in (bouton depuis l'accueil)
+    const pending = getPendingCheckins();
+    if (pending.length === 0) {
+      alert('◆ Tous tes jours sont à jour.');
+      return;
+    }
+    checkinQueue = pending.slice();
+    showNextCheckin();
+  }
+
+  function closeCheckinModal() {
+    document.getElementById('checkinModal').classList.remove('active');
+  }
+
   // ========== RENDER ==========
   function renderAll() {
     renderHome();
     renderPrayers();
     renderStats();
     renderJournal();
+    renderCheckinCard();
+    renderDailyGrid();
+    renderFardTracker();
+  }
+
+  function renderCheckinCard() {
+    const card = document.getElementById('checkinCard');
+    if (!card) return;
+    const today = todayStr();
+    const pending = getPendingCheckins();
+
+    if (pending.length === 0) {
+      card.style.display = 'none';
+      return;
+    }
+
+    card.style.display = 'block';
+    const status = document.getElementById('checkinCardStatus');
+    const label = document.getElementById('checkinCardLabel');
+    const btn = document.getElementById('checkinCardBtn');
+
+    const todayValidated = state.dailyCheckins[today];
+
+    if (pending.length === 1 && pending[0] === today) {
+      // Seulement aujourd'hui
+      card.classList.remove('done');
+      label.textContent = '◆ Check-in du jour ◆';
+      status.innerHTML = 'Comment s\'est passée ta journée ?<br><em style="color: var(--ivory-dim); font-size: 0.9em;">N\'oublie pas de valider chaque soir.</em>';
+      btn.textContent = 'Faire mon check-in';
+    } else {
+      card.classList.remove('done');
+      label.textContent = '⚠ Check-ins en retard';
+      status.innerHTML = `Tu as <strong style="color: var(--gold-bright);">${pending.length} jours</strong> à valider.<br><em style="color: var(--ivory-dim); font-size: 0.9em;">Sois honnête avec toi-même.</em>`;
+      btn.textContent = 'Valider mes jours';
+    }
+  }
+
+  function renderDailyGrid() {
+    const grid = document.getElementById('dailyGrid');
+    if (!grid) return;
+
+    const today = todayStr();
+    const N = 60; // 60 derniers jours
+    const dates = [];
+    for (let i = N - 1; i >= 0; i--) {
+      dates.push(dateOffset(today, -i));
+    }
+
+    const startD = new Date(state.startDate);
+    startD.setHours(0,0,0,0);
+
+    let html = '';
+    let tenuCount = 0, tombeCount = 0, validCount = 0;
+    dates.forEach(d => {
+      const dObj = new Date(d);
+      dObj.setHours(0,0,0,0);
+      const status = state.dailyCheckins[d];
+
+      // Aussi compter les tombes via history pour les périodes anciennes
+      let cssClass = 'daily-dot';
+      if (status === 'tenu') { cssClass += ' tenu'; tenuCount++; validCount++; }
+      else if (status === 'tombe') { cssClass += ' tombe'; tombeCount++; validCount++; }
+
+      if (d === today) cssClass += ' today';
+
+      const label = formatDateFr(d);
+      const statusLabel = status === 'tenu' ? '✓ tenu' : status === 'tombe' ? '✗ tombé' : 'non validé';
+      html += `<div class="${cssClass}" title="${label} — ${statusLabel}" onclick="manualSetDay('${d}')"></div>`;
+    });
+
+    grid.innerHTML = html;
+
+    // Stats
+    document.getElementById('statTenu').textContent = tenuCount;
+    document.getElementById('statTombe').textContent = tombeCount;
+    const regul = validCount > 0 ? Math.round((tenuCount / validCount) * 100) : 0;
+    document.getElementById('statRegul').textContent = regul + '%';
+  }
+
+  function manualSetDay(date) {
+    const current = state.dailyCheckins[date];
+    const currentLabel = current === 'tenu' ? '✓ Tenu' : current === 'tombe' ? '✗ Tombé' : 'Non validé';
+    const choice = prompt(
+      `${formatDateFr(date)}\nActuel : ${currentLabel}\n\n` +
+      'Tape :\n' +
+      '  1 pour ✓ Tenu\n' +
+      '  2 pour ✗ Tombé\n' +
+      '  3 pour Annuler le check-in\n' +
+      '  (vide pour ne rien changer)',
+      ''
+    );
+    if (!choice) return;
+    if (choice === '1') {
+      state.dailyCheckins[date] = 'tenu';
+    } else if (choice === '2') {
+      state.dailyCheckins[date] = 'tombe';
+    } else if (choice === '3') {
+      delete state.dailyCheckins[date];
+    } else {
+      return;
+    }
+    save();
+    renderAll();
+  }
+
+  // ========== TRACKER FARD ==========
+  const FARD_NAMES = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+  // Retourne le nombre de fard faits pour un jour donné (0-5)
+  function getFardCountForDay(dateStr) {
+    const dayPrayers = state.prayers[dateStr] || {};
+    let count = 0;
+    FARD_NAMES.forEach(f => {
+      if (dayPrayers[f + '_fard']) count++;
+    });
+    return count;
+  }
+
+  // Retourne true si un fard spécifique est fait ce jour
+  function isFardDoneOnDay(fardName, dateStr) {
+    const dayPrayers = state.prayers[dateStr] || {};
+    return !!dayPrayers[fardName + '_fard'];
+  }
+
+  // Compte un fard spécifique sur les N derniers jours
+  function countFardInLastDays(fardName, days) {
+    let count = 0;
+    const today = todayStr();
+    for (let i = 0; i < days; i++) {
+      const d = dateOffset(today, -i);
+      if (isFardDoneOnDay(fardName, d)) count++;
+    }
+    return count;
+  }
+
+  // Streak d'un fard spécifique : jours consécutifs où il a été fait, en remontant depuis aujourd'hui
+  // Règle : on regarde à partir d'hier (aujourd'hui est "en cours"), sauf si la prière d'aujourd'hui est déjà faite
+  function getFardStreak(fardName) {
+    const today = todayStr();
+    let streak = 0;
+    let cursor;
+
+    if (isFardDoneOnDay(fardName, today)) {
+      streak = 1;
+      cursor = dateOffset(today, -1);
+    } else {
+      cursor = dateOffset(today, -1);
+    }
+
+    // Limite à 365 pour éviter une boucle infinie
+    for (let i = 0; i < 365; i++) {
+      if (isFardDoneOnDay(fardName, cursor)) {
+        streak++;
+        cursor = dateOffset(cursor, -1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  // Total fard faits depuis le début (tous)
+  function getTotalFardEver() {
+    let total = 0;
+    Object.keys(state.prayers).forEach(date => {
+      total += getFardCountForDay(date);
+    });
+    return total;
+  }
+
+  // Stats sur les derniers N jours : total fait / total possible
+  function getFardStatsLastDays(days) {
+    const today = todayStr();
+    let done = 0;
+    for (let i = 0; i < days; i++) {
+      const d = dateOffset(today, -i);
+      done += getFardCountForDay(d);
+    }
+    return { done, total: days * 5, pct: Math.round((done / (days * 5)) * 100) };
+  }
+
+  // Stats sur le mois en cours
+  function getFardStatsThisMonth() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    let done = 0;
+    let daysElapsed = 0;
+    const cursor = new Date(firstDay);
+    while (cursor <= today) {
+      const dStr = cursor.toISOString().split('T')[0];
+      done += getFardCountForDay(dStr);
+      daysElapsed++;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    const total = daysElapsed * 5;
+    return { done, total, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
+  }
+
+  function renderFardTracker() {
+    if (!document.getElementById('fardCalGrid')) return;
+
+    // Stats principales
+    const monthStats = getFardStatsThisMonth();
+    document.getElementById('fardMonthScore').textContent = monthStats.done + '/' + monthStats.total;
+    document.getElementById('fardMonthPct').textContent = monthStats.pct + '%';
+
+    const stats30 = getFardStatsLastDays(30);
+    document.getElementById('fard30Score').textContent = stats30.done + '/' + stats30.total;
+    document.getElementById('fard30Pct').textContent = stats30.pct + '%';
+
+    document.getElementById('fardTotalScore').textContent = getTotalFardEver();
+
+    // Streaks
+    const fajrStreak = getFardStreak('fajr');
+    const ishaStreak = getFardStreak('isha');
+
+    document.getElementById('fajrStreak').textContent = fajrStreak;
+    document.getElementById('ishaStreak').textContent = ishaStreak;
+
+    const fajrBox = document.getElementById('fajrStreakBox');
+    const ishaBox = document.getElementById('ishaStreakBox');
+    const fajrFlame = document.getElementById('fajrFlame');
+    const ishaFlame = document.getElementById('ishaFlame');
+
+    if (fajrStreak === 0) {
+      fajrBox.classList.add('zero');
+      fajrFlame.style.display = 'none';
+    } else {
+      fajrBox.classList.remove('zero');
+      fajrFlame.style.display = 'inline';
+    }
+    if (ishaStreak === 0) {
+      ishaBox.classList.add('zero');
+      ishaFlame.style.display = 'none';
+    } else {
+      ishaBox.classList.remove('zero');
+      ishaFlame.style.display = 'inline';
+    }
+
+    document.getElementById('fajrStreakLabel').textContent =
+      fajrStreak === 0 ? 'Reprends demain' :
+      fajrStreak === 1 ? 'jour (continue !)' : 'jours consécutifs';
+    document.getElementById('ishaStreakLabel').textContent =
+      ishaStreak === 0 ? 'Reprends ce soir' :
+      ishaStreak === 1 ? 'jour (continue !)' : 'jours consécutifs';
+
+    // Rappel bienveillant si prière ratée hier (ou aujourd'hui pas faite et fin de journée)
+    renderFardReminder();
+
+    // Calendrier 60 jours
+    const grid = document.getElementById('fardCalGrid');
+    const today = todayStr();
+    const N = 60;
+    const dates = [];
+    for (let i = N - 1; i >= 0; i--) {
+      dates.push(dateOffset(today, -i));
+    }
+
+    let html = '';
+    dates.forEach(d => {
+      const count = getFardCountForDay(d);
+      let cssClass = 'fard-day f' + count;
+      if (d === today) cssClass += ' today';
+      // Indicateur si c'est un jour passé sans données (pas forcément 0, on ne sait pas)
+      // On considère que si count = 0 c'est qu'il y a 0, simple
+      html += `<div class="${cssClass}" onclick="openFardDetail('${d}')" title="${formatDateFr(d)} — ${count}/5">${count}</div>`;
+    });
+    grid.innerHTML = html;
+  }
+
+  function renderFardReminder() {
+    const reminder = document.getElementById('fardReminder');
+    if (!reminder) return;
+
+    // Cas 1 : hier a été raté (moins de 5 fard)
+    const yesterday = dateOffset(todayStr(), -1);
+    const yesterdayCount = getFardCountForDay(yesterday);
+    const startD = new Date(state.startDate);
+    const yestD = new Date(yesterday);
+    startD.setHours(0,0,0,0);
+    yestD.setHours(0,0,0,0);
+
+    // Ne pas afficher si hier est antérieur au Jour 1
+    if (yestD < startD) {
+      reminder.style.display = 'none';
+      return;
+    }
+
+    if (yesterdayCount < 5 && yesterdayCount >= 0) {
+      // Vérifier si au moins une entrée pour hier existe (pour éviter d'afficher quand rien n'a été coché)
+      const yesterdayData = state.prayers[yesterday];
+      const hasAnyData = yesterdayData && Object.keys(yesterdayData).length > 0;
+
+      if (hasAnyData) {
+        reminder.style.display = 'block';
+        const missing = 5 - yesterdayCount;
+        document.getElementById('fardReminderFr').innerHTML =
+          `Hier tu as raté <strong style="color: var(--gold-bright);">${missing}</strong> fard${missing > 1 ? 's' : ''}.<br>` +
+          `« Certes la prière préserve de la turpitude et du blâmable » — Al-Ankabut 29:45`;
+        return;
+      }
+    }
+    reminder.style.display = 'none';
+  }
+
+  // ========== MODAL DÉTAIL JOUR FARD ==========
+  let fardDetailCurrentDate = null;
+
+  function openFardDetail(dateStr) {
+    const today = todayStr();
+    // Ne pas permettre d'ouvrir un jour futur
+    if (new Date(dateStr) > new Date(today)) return;
+
+    fardDetailCurrentDate = dateStr;
+    document.getElementById('fardDetailDate').textContent = formatDateFr(dateStr);
+
+    // Mettre à jour l'état visuel des rows
+    FARD_NAMES.forEach(f => {
+      const row = document.querySelector(`.fard-detail-row[data-fard="${f}"]`);
+      if (!row) return;
+      const done = isFardDoneOnDay(f, dateStr);
+      if (done) {
+        row.classList.add('done');
+        row.querySelector('.fard-detail-row-check').textContent = '◆';
+      } else {
+        row.classList.remove('done');
+        row.querySelector('.fard-detail-row-check').textContent = '◇';
+      }
+    });
+
+    const count = getFardCountForDay(dateStr);
+    document.getElementById('fardDetailTotal').textContent = count + '/5 fard';
+
+    document.getElementById('fardDetailModal').classList.add('active');
+    if (navigator.vibrate) navigator.vibrate(30);
+  }
+
+  function closeFardDetailModal() {
+    document.getElementById('fardDetailModal').classList.remove('active');
+    fardDetailCurrentDate = null;
+  }
+
+  function toggleFardInDetail(row) {
+    if (!fardDetailCurrentDate) return;
+    const fardName = row.dataset.fard;
+    const key = fardName + '_fard';
+    if (!state.prayers[fardDetailCurrentDate]) state.prayers[fardDetailCurrentDate] = {};
+    state.prayers[fardDetailCurrentDate][key] = !state.prayers[fardDetailCurrentDate][key];
+    save();
+    if (navigator.vibrate) navigator.vibrate(20);
+    // Refresh le visuel du modal
+    openFardDetail(fardDetailCurrentDate);
+    // Et rafraîchir le tracker général
+    renderAll();
   }
 
   function renderHome() {
@@ -1535,7 +2676,6 @@
     const today = todayStr();
     const todayPrayers = state.prayers[today] || {};
     const todayExtra = state.extraNafila[today] || 0;
-    const todayDhikr = state.dhikr[today] || {};
 
     // Prières items
     document.querySelectorAll('.prayer-row').forEach(row => {
@@ -1562,8 +2702,6 @@
     });
     totalRakaat += todayExtra * 2; // chaque nafila extra = 2 rak'aat
 
-    const totalFard = 17; // 2+4+4+3+4
-    const totalSunnah = 12; // sunnah régulières + witr (approx)
     document.getElementById('todayScore').textContent = totalRakaat;
     document.getElementById('prayersTodayLabel').textContent =
       `◆ Fard : ${fardCount}/5 · Sunnah : ${sunnahCount}/6 · Nafila : ${nafilaCount + todayExtra} ◆`;
@@ -1571,12 +2709,6 @@
     // Extra nafila counter
     const extraEl = document.getElementById('extraCount');
     if (extraEl) extraEl.textContent = todayExtra;
-
-    // Dhikr
-    ['subhan', 'hamd', 'akbar', 'istighfar'].forEach(k => {
-      const el = document.getElementById('dhikr_' + k);
-      if (el) el.textContent = todayDhikr[k] || 0;
-    });
   }
 
   function renderStats() {
@@ -1808,29 +2940,11 @@
     renderPrayers();
   }
 
-  function incDhikr(type, amount = 1) {
-    const today = todayStr();
-    if (!state.dhikr[today]) state.dhikr[today] = {};
-    state.dhikr[today][type] = (state.dhikr[today][type] || 0) + amount;
-    if (navigator.vibrate) navigator.vibrate(20);
-    save();
-    renderPrayers();
-  }
-
-  function decDhikr(type) {
-    const today = todayStr();
-    if (!state.dhikr[today]) state.dhikr[today] = {};
-    state.dhikr[today][type] = Math.max(0, (state.dhikr[today][type] || 0) - 1);
-    save();
-    renderPrayers();
-  }
-
   function resetPrayersToday() {
-    if (!confirm('Réinitialiser les prières et dhikr d\'aujourd\'hui ?')) return;
+    if (!confirm('Réinitialiser les prières d\'aujourd\'hui ?')) return;
     const today = todayStr();
     delete state.prayers[today];
     delete state.extraNafila[today];
-    delete state.dhikr[today];
     save();
     renderPrayers();
   }
@@ -1941,6 +3055,17 @@
   // ========== DÉMARRAGE ==========
   init();
   setInterval(renderAll, 60000);
+
+  // Re-vérifier les check-ins si l'utilisateur revient sur la page (changement de jour)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      renderAll();
+      // Si la popup n'est pas déjà ouverte, vérifier les check-ins en attente
+      if (!document.getElementById('checkinModal').classList.contains('active')) {
+        setTimeout(checkPendingCheckins, 300);
+      }
+    }
+  });
 </script>
 
 </body>
