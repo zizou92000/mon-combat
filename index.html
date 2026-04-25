@@ -717,6 +717,7 @@
   }
   .bar-col {
     flex: 1;
+    max-width: 60px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -726,7 +727,8 @@
     justify-content: flex-end;
   }
   .bar {
-    width: 70%;
+    width: 100%;
+    max-width: 36px;
     background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
     border-radius: 2px 2px 0 0;
     min-height: 2px;
@@ -2228,19 +2230,40 @@
     }
   }
 
+  // === FONCTIONS DE DATE (HEURE LOCALE, pas UTC !) ===
+  // Le bug précédent : toISOString() donne la date en UTC.
+  // À 1h du matin en France (UTC+1/+2), UTC est encore "hier" — décalage d'un jour.
+  // On formate les dates en heure locale pour éviter ces décalages.
+
+  function dateToStr(d) {
+    // Format YYYY-MM-DD en heure LOCALE
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   function todayStr() {
-    return new Date().toISOString().split('T')[0];
+    return dateToStr(new Date());
   }
 
   // Helper: décaler une date de N jours
   function dateOffset(dateStr, offset) {
-    const d = new Date(dateStr);
-    d.setDate(d.getDate() + offset);
-    return d.toISOString().split('T')[0];
+    // Parse "YYYY-MM-DD" comme date locale (pas UTC)
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    date.setDate(date.getDate() + offset);
+    return dateToStr(date);
+  }
+
+  function parseLocalDate(dateStr) {
+    // Convertit "YYYY-MM-DD" en Date locale (minuit local)
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
   }
 
   function formatDateFr(dateStr) {
-    const d = new Date(dateStr);
+    const d = parseLocalDate(dateStr);
     return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
@@ -2256,7 +2279,7 @@
 
   // ========== CALCULS JOURS ==========
   function getDays() {
-    const start = new Date(state.startDate);
+    const start = parseLocalDate(state.startDate);
     const now = new Date();
     start.setHours(0,0,0,0);
     now.setHours(0,0,0,0);
@@ -2281,7 +2304,7 @@
   function getPendingCheckins() {
     const today = todayStr();
     const pending = [];
-    const start = new Date(state.startDate);
+    const start = parseLocalDate(state.startDate);
     start.setHours(0,0,0,0);
     const now = new Date();
     now.setHours(0,0,0,0);
@@ -2297,7 +2320,7 @@
     // Règle : on demande pour TOUT jour passé non validé, + aujourd'hui si pas encore validé
     const cursor = new Date(startCheck);
     while (cursor <= now) {
-      const dateStr = cursor.toISOString().split('T')[0];
+      const dateStr = dateToStr(cursor);
       if (!state.dailyCheckins[dateStr]) {
         pending.push(dateStr);
       }
@@ -2353,8 +2376,8 @@
     }
 
     // Rappel adaptatif selon la phase
-    const startD = new Date(state.startDate);
-    const checkD = new Date(checkinCurrent);
+    const startD = parseLocalDate(state.startDate);
+    const checkD = parseLocalDate(checkinCurrent);
     checkD.setHours(0,0,0,0);
     startD.setHours(0,0,0,0);
     const daysSinceStart = Math.max(0, Math.floor((checkD - startD) / (1000*60*60*24)));
@@ -2413,8 +2436,8 @@
 
       // Calcul : ajouter l'ancien streak à l'historique et recommencer à date+1
       // Le jour de rechute lui-même compte comme un échec, donc les jours tenus = (date - startDate)
-      const startD = new Date(state.startDate);
-      const rechuteD = new Date(date);
+      const startD = parseLocalDate(state.startDate);
+      const rechuteD = parseLocalDate(date);
       startD.setHours(0,0,0,0);
       rechuteD.setHours(0,0,0,0);
       const daysTenus = Math.max(0, Math.floor((rechuteD - startD) / (1000*60*60*24)));
@@ -2429,7 +2452,7 @@
       // Nouveau Jour 1 = le jour suivant la rechute
       const newStart = dateOffset(date, 1);
       // Mais si newStart est dans le futur, on garde le jour lui-même
-      if (new Date(newStart) > new Date(todayStr())) {
+      if (parseLocalDate(newStart) > parseLocalDate(todayStr())) {
         state.startDate = todayStr();
       } else {
         state.startDate = newStart;
@@ -2529,13 +2552,13 @@
       dates.push(dateOffset(today, -i));
     }
 
-    const startD = new Date(state.startDate);
+    const startD = parseLocalDate(state.startDate);
     startD.setHours(0,0,0,0);
 
     let html = '';
     let tenuCount = 0, tombeCount = 0, validCount = 0;
     dates.forEach(d => {
-      const dObj = new Date(d);
+      const dObj = parseLocalDate(d);
       dObj.setHours(0,0,0,0);
       const status = state.dailyCheckins[d];
 
@@ -2675,7 +2698,7 @@
     let daysElapsed = 0;
     const cursor = new Date(firstDay);
     while (cursor <= today) {
-      const dStr = cursor.toISOString().split('T')[0];
+      const dStr = dateToStr(cursor);
       done += getFardCountForDay(dStr);
       daysElapsed++;
       cursor.setDate(cursor.getDate() + 1);
@@ -2763,8 +2786,8 @@
     // Cas 1 : hier a été raté (moins de 5 fard)
     const yesterday = dateOffset(todayStr(), -1);
     const yesterdayCount = getFardCountForDay(yesterday);
-    const startD = new Date(state.startDate);
-    const yestD = new Date(yesterday);
+    const startD = parseLocalDate(state.startDate);
+    const yestD = parseLocalDate(yesterday);
     startD.setHours(0,0,0,0);
     yestD.setHours(0,0,0,0);
 
@@ -2797,7 +2820,7 @@
   function openFardDetail(dateStr) {
     const today = todayStr();
     // Ne pas permettre d'ouvrir un jour futur
-    if (new Date(dateStr) > new Date(today)) return;
+    if (parseLocalDate(dateStr) > parseLocalDate(today)) return;
 
     fardDetailCurrentDate = dateStr;
     document.getElementById('fardDetailDate').textContent = formatDateFr(dateStr);
@@ -2847,7 +2870,7 @@
     document.getElementById('dayCount').textContent = days;
     document.getElementById('dayLabel').textContent = days <= 1 ? 'jour' : 'jours';
 
-    const d = new Date(state.startDate);
+    const d = parseLocalDate(state.startDate);
     document.getElementById('startDate').textContent = 'depuis le ' + d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
     if (days > state.record) { state.record = days; save(); }
@@ -2946,7 +2969,7 @@
     startDayOfWeek = (startDayOfWeek + 6) % 7; // Lundi = 0
 
     const today = todayStr();
-    const startDateObj = new Date(state.startDate);
+    const startDateObj = parseLocalDate(state.startDate);
     startDateObj.setHours(0,0,0,0);
 
     // Set de dates de rechute
@@ -2954,9 +2977,9 @@
     (state.history || []).forEach(h => {
       // Calculer la date de rechute = date de début + days
       if (h.date && typeof h.days === 'number') {
-        const rd = new Date(h.date);
+        const rd = parseLocalDate(h.date);
         rd.setDate(rd.getDate() + h.days);
-        relapseDatesSet.add(rd.toISOString().split('T')[0]);
+        relapseDatesSet.add(dateToStr(rd));
       }
     });
 
@@ -2964,21 +2987,21 @@
     const cleanDatesSet = new Set();
     (state.history || []).forEach(h => {
       if (h.date && typeof h.days === 'number') {
-        const start = new Date(h.date);
+        const start = parseLocalDate(h.date);
         for (let i = 0; i < h.days; i++) {
           const d = new Date(start);
           d.setDate(d.getDate() + i);
-          cleanDatesSet.add(d.toISOString().split('T')[0]);
+          cleanDatesSet.add(dateToStr(d));
         }
       }
     });
     // + jours depuis Jour 1 actuel
-    const currentStart = new Date(state.startDate);
+    const currentStart = parseLocalDate(state.startDate);
     const curDays = getDays();
     for (let i = 0; i <= curDays; i++) {
-      const d = new Date(currentStart);
+      const d = parseLocalDate(currentStart);
       d.setDate(d.getDate() + i);
-      cleanDatesSet.add(d.toISOString().split('T')[0]);
+      cleanDatesSet.add(dateToStr(d));
     }
 
     const grid = document.getElementById('calendarGrid');
@@ -2997,7 +3020,7 @@
     for (let d = 1; d <= daysInMonth; d++) {
       const cellDate = new Date(year, month, d);
       cellDate.setHours(0,0,0,0);
-      const dateStr = cellDate.toISOString().split('T')[0];
+      const dateStr = dateToStr(cellDate);
       const cell = document.createElement('div');
       cell.className = 'cal-day';
       cell.innerHTML = `<div class="cal-day-num">${d}</div>`;
@@ -3032,7 +3055,7 @@
     streaks.push({ start: state.startDate, days: getDays() });
 
     streaks.forEach(s => {
-      const start = new Date(s.start);
+      const start = parseLocalDate(s.start);
       for (let i = 0; i < s.days; i++) {
         const d = new Date(start);
         d.setDate(d.getDate() + i);
@@ -3049,21 +3072,51 @@
       return;
     }
 
-    // Ne garder que les 12 derniers mois max
-    const recentKeys = keys.slice(-12);
-    const maxVal = Math.max(...recentKeys.map(k => monthData[k]), 1);
+    // Toujours afficher au moins 6 mois (5 derniers + actuel) pour donner du contexte visuel
+    // Compléter avec les mois manquants avec valeur 0
+    const now = new Date();
+    const displayKeys = [];
+    const MIN_MONTHS = 6;
+    const MAX_MONTHS = 12;
+
+    // Trouver le mois le plus ancien (entre les données et 6 mois en arrière)
+    const oldestData = keys[0];
+    const sixMonthsBack = new Date(now.getFullYear(), now.getMonth() - (MIN_MONTHS - 1), 1);
+    const sixMonthsBackKey = sixMonthsBack.getFullYear() + '-' + String(sixMonthsBack.getMonth() + 1).padStart(2, '0');
+
+    const startKey = oldestData < sixMonthsBackKey ? oldestData : sixMonthsBackKey;
+    const [startY, startM] = startKey.split('-').map(Number);
+
+    // Générer la liste des clés depuis startKey jusqu'au mois actuel
+    const endY = now.getFullYear();
+    const endM = now.getMonth() + 1; // 1-12
+    let curY = startY, curM = startM;
+    while (curY < endY || (curY === endY && curM <= endM)) {
+      const k = curY + '-' + String(curM).padStart(2, '0');
+      displayKeys.push(k);
+      curM++;
+      if (curM > 12) { curM = 1; curY++; }
+    }
+
+    // Limiter aux 12 derniers
+    const recentKeys = displayKeys.slice(-MAX_MONTHS);
+    const maxVal = Math.max(...recentKeys.map(k => monthData[k] || 0), 1);
     const monthAbbr = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
 
     let html = '<div class="chart-bars">';
     recentKeys.forEach(k => {
       const [y, m] = k.split('-');
-      const height = (monthData[k] / maxVal) * 100;
+      const value = monthData[k] || 0;
+      // Hauteur min de 4% pour qu'on voit une barre même à 0 (visuel léger)
+      const height = value === 0 ? 0 : Math.max(4, (value / maxVal) * 100);
       const label = monthAbbr[parseInt(m) - 1] + ' ' + y.slice(2);
+      const valueDisplay = value === 0 ? '' : `<div class="bar-value">${value}</div>`;
+      const barStyle = value === 0
+        ? 'height: 0; min-height: 1px; background: rgba(201, 169, 97, 0.2);'
+        : `height: ${height}%;`;
       html += `
         <div class="bar-col">
-          <div class="bar" style="height: ${height}%;">
-            <div class="bar-value">${monthData[k]}</div>
-          </div>
+          <div class="bar" style="${barStyle}">${valueDisplay}</div>
           <div class="bar-label">${label}</div>
         </div>`;
     });
@@ -3078,7 +3131,7 @@
       return;
     }
     list.innerHTML = state.history.slice().reverse().map(h => {
-      const date = new Date(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const date = parseLocalDate(h.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
       return `<div class="history-item">
         <div class="history-date">◆ ${date} — ${h.days} jour${h.days > 1 ? 's' : ''} tenus</div>
         ${h.note ? `<div class="history-note">${escapeHtml(h.note)}</div>` : ''}
@@ -3104,7 +3157,7 @@
       historyEl.innerHTML = '<p style="color: var(--ivory-dim); font-style: italic; font-size: 0.88em; text-align: center;">Pas encore de notes précédentes.</p>';
     } else {
       historyEl.innerHTML = entries.map(([d, t]) => {
-        const date = new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        const date = parseLocalDate(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
         return `<div class="history-item">
           <div class="history-date">◆ ${date}</div>
           <div class="history-note">${escapeHtml(t)}</div>
