@@ -717,7 +717,6 @@
   }
   .bar-col {
     flex: 1;
-    max-width: 60px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -727,8 +726,7 @@
     justify-content: flex-end;
   }
   .bar {
-    width: 100%;
-    max-width: 36px;
+    width: 70%;
     background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
     border-radius: 2px 2px 0 0;
     min-height: 2px;
@@ -2237,6 +2235,9 @@
 
   function dateToStr(d) {
     // Format YYYY-MM-DD en heure LOCALE
+    if (!d || !(d instanceof Date) || isNaN(d.getTime())) {
+      return todayStr(); // fallback safe
+    }
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -2244,21 +2245,32 @@
   }
 
   function todayStr() {
-    return dateToStr(new Date());
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
   // Helper: décaler une date de N jours
   function dateOffset(dateStr, offset) {
-    // Parse "YYYY-MM-DD" comme date locale (pas UTC)
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const date = new Date(y, m - 1, d);
+    const date = parseLocalDate(dateStr);
     date.setDate(date.getDate() + offset);
     return dateToStr(date);
   }
 
   function parseLocalDate(dateStr) {
     // Convertit "YYYY-MM-DD" en Date locale (minuit local)
-    const [y, m, d] = dateStr.split('-').map(Number);
+    // Robuste contre null/undefined/format invalide
+    if (!dateStr || typeof dateStr !== 'string') {
+      return new Date(); // fallback : aujourd'hui
+    }
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return new Date();
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    const d = parseInt(parts[2], 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return new Date();
     return new Date(y, m - 1, d);
   }
 
@@ -3072,51 +3084,21 @@
       return;
     }
 
-    // Toujours afficher au moins 6 mois (5 derniers + actuel) pour donner du contexte visuel
-    // Compléter avec les mois manquants avec valeur 0
-    const now = new Date();
-    const displayKeys = [];
-    const MIN_MONTHS = 6;
-    const MAX_MONTHS = 12;
-
-    // Trouver le mois le plus ancien (entre les données et 6 mois en arrière)
-    const oldestData = keys[0];
-    const sixMonthsBack = new Date(now.getFullYear(), now.getMonth() - (MIN_MONTHS - 1), 1);
-    const sixMonthsBackKey = sixMonthsBack.getFullYear() + '-' + String(sixMonthsBack.getMonth() + 1).padStart(2, '0');
-
-    const startKey = oldestData < sixMonthsBackKey ? oldestData : sixMonthsBackKey;
-    const [startY, startM] = startKey.split('-').map(Number);
-
-    // Générer la liste des clés depuis startKey jusqu'au mois actuel
-    const endY = now.getFullYear();
-    const endM = now.getMonth() + 1; // 1-12
-    let curY = startY, curM = startM;
-    while (curY < endY || (curY === endY && curM <= endM)) {
-      const k = curY + '-' + String(curM).padStart(2, '0');
-      displayKeys.push(k);
-      curM++;
-      if (curM > 12) { curM = 1; curY++; }
-    }
-
-    // Limiter aux 12 derniers
-    const recentKeys = displayKeys.slice(-MAX_MONTHS);
-    const maxVal = Math.max(...recentKeys.map(k => monthData[k] || 0), 1);
+    // Ne garder que les 12 derniers mois max
+    const recentKeys = keys.slice(-12);
+    const maxVal = Math.max(...recentKeys.map(k => monthData[k]), 1);
     const monthAbbr = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
 
     let html = '<div class="chart-bars">';
     recentKeys.forEach(k => {
       const [y, m] = k.split('-');
-      const value = monthData[k] || 0;
-      // Hauteur min de 4% pour qu'on voit une barre même à 0 (visuel léger)
-      const height = value === 0 ? 0 : Math.max(4, (value / maxVal) * 100);
+      const height = (monthData[k] / maxVal) * 100;
       const label = monthAbbr[parseInt(m) - 1] + ' ' + y.slice(2);
-      const valueDisplay = value === 0 ? '' : `<div class="bar-value">${value}</div>`;
-      const barStyle = value === 0
-        ? 'height: 0; min-height: 1px; background: rgba(201, 169, 97, 0.2);'
-        : `height: ${height}%;`;
       html += `
         <div class="bar-col">
-          <div class="bar" style="${barStyle}">${valueDisplay}</div>
+          <div class="bar" style="height: ${height}%;">
+            <div class="bar-value">${monthData[k]}</div>
+          </div>
           <div class="bar-label">${label}</div>
         </div>`;
     });
